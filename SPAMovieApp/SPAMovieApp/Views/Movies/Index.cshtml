@@ -1,0 +1,130 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2 class="text-center">Movies</h2><br />
+
+<ul class="data">
+</ul>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-offset-3 col-md-6">
+            <form id="frm" class="form-horizontal">
+                <fieldset>
+                    <legend class="text-center">Create Movie</legend>
+                    <div class="form-group">
+                        <label for="inputEmail" class="col-lg-2 control-label">Title</label>
+                        <div class="col-lg-10">
+                            <input type="text" class="form-control" id="title" placeholder="Title...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword" class="col-lg-2 control-label">Director</label>
+                        <div class="col-lg-10">
+                            <input type="text" class="form-control" id="director" placeholder="Director...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPassword" class="col-lg-2 control-label">Image Url</label>
+                        <div class="col-lg-10">
+                            <input type="text" class="form-control" id="imageurl" placeholder="Image Url...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-10 col-lg-offset-2">
+                            <button type="reset" class="btn btn-default">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+            <hr />
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row" id="row-movies">
+
+    </div>
+</div>
+
+
+
+@section scripts {
+<script>
+
+
+    var frm = document.getElementById('frm');
+    var title = document.getElementById('title');
+    var movie = document.getElementById('movie');
+    var imageurl = document.getElementById('imageurl');
+
+    $("body").on("click", "#delete", function () {
+
+        $.ajax({
+            url: '/api/movies/' + $(this)[0].name,
+            type: 'DELETE'
+        }).done(function () {
+            fetchMovies();
+        });
+       
+    });
+
+    //$('#2').addEventListener('click', function (e) {
+    //    e.preventDefault();
+    //    alert("something");
+    //});
+
+    //$('#delete').click(function (e) {
+    //    e.preventDefault();
+    //    alert("something");
+    //});
+
+    //handle form submit
+    frm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        //create payload
+        var movie = {
+            title: title.value,
+            director: director.value,
+            imageurl: imageurl.value
+        };
+
+        $.ajax('/api/movies/', {
+            type: 'POST',
+            data: JSON.stringify(movie),
+            contentType: 'application/json',
+            dataType: 'json'
+        }).done(function () {
+            e.target.reset();
+            fetchMovies();
+        }).fail(function () {
+            var errorMessage = '';
+            var result = JSON.parse(xhr.responseText);
+            console.log(result.modelState);
+            for (var prop in result.modelState) {
+                errorMessage += result.modelState[prop] + '\r';
+            }
+            alert(errorMessage);
+        })
+    });
+
+    fetchMovies();
+    function fetchMovies() {
+        $.getJSON('/api/movies/', function (data) {
+            var movieList = document.getElementById("row-movies");
+            movieList.innerHTML = "";
+            data.forEach(function (dat) {
+                $(".row").append("<div class='col-md-4 text-center'><p>ID: " + dat.Id + "</p><p><b>Title:</b> " + dat.Title + "</p><p><b>Director: </b>" + dat.Director + "</p><p><img class='center-block' style='height: 200px;' src='" + dat.ImageUrl + "'></p> <a name='" + dat.Id + "'  id='delete' class='btn btn-danger btn-xs'>Delete</a> <a href='#' class='btn btn-warning btn-xs'>Edit</a> <hr/></div>");
+
+            });
+
+        })
+    };
+</script>
+}
+
